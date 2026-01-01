@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Baura</string>
+
+    <!-- Tabs -->
+    <string name="tab_home">Inicio</string>
+    <string name="tab_explore">Explorar</string>
+    <string name="tab_test">Test</string>
+    <string name="tab_library">Colección</string>
+    <string name="tab_settings">Ajustes</string>
+
+    <!-- Auth -->
+    <string name="google_web_client_id">296354839132-5278o1bgu1r6d3bk4mpjlujg11jfhkaj.apps.googleusercontent.com</string>
+    <string name="hello">¡Hola!</string>
+    <string name="welcome_to_baura">Bienvenido a Baura</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="register">Registrarse</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="continue_with_google">Continuar con Google</string>
+    <string name="continue_with_apple">Continuar con Apple</string>
+    <string name="or">o</string>
+    <string name="or_login_with">O inicia sesión con</string>
+    <string name="dont_have_account">¿No tienes cuenta?</string>
+    <string name="not_registered">¿No estás registrado?</string>
+    <string name="register_here">Regístrate aquí</string>
+    <string name="already_have_account">¿Ya tienes cuenta?</string>
+    <string name="logout">Cerrar sesión</string>
+
+    <!-- Home -->
+    <string name="greeting_morning">Buenos días, %1$s</string>
+    <string name="greeting_afternoon">Buenas tardes, %1$s</string>
+    <string name="greeting_evening">Buenas noches, %1$s</string>
+    <string name="your_profile">Tu Perfil</string>
+    <string name="wishlist">Lista de deseos</string>
+    <string name="tried_perfumes">Probados</string>
+    <string name="see_all">Ver todo</string>
+    <string name="recommended">RECOMENDADOS</string>
+    <string name="see_all_arrow">Ver todos</string>
+    <string name="no_recommendations_yet">Sin recomendaciones aún</string>
+    <string name="match">match</string>
+    <string name="home_welcome_title">Bienvenido a tu Perfumería Personal</string>
+    <string name="home_welcome_description">Aquí podrás descubrir recomendaciones de fragancias personalizadas según tu perfil olfativo.\nCrea tu primer perfil para recibir sugerencias y explorar perfumes ideales para ti.</string>
+    <string name="create_olfactory_profile">Crear mi Perfil Olfativo</string>
+    <string name="loading_profiles">Cargando perfiles…</string>
+    <string name="error_loading_profiles">Error al cargar perfiles</string>
+
+    <!-- Test -->
+    <string name="start_test">Comenzar Test</string>
+    <string name="continue_test">Continuar</string>
+    <string name="finish_test">Finalizar</string>
+    <string name="your_recommendations">Tus Recomendaciones</string>
+    <string name="save_profile">Guardar Perfil</string>
+
+    <!-- Library -->
+    <string name="add_perfume">Añadir Perfume</string>
+    <string name="search_perfumes">Buscar perfumes…</string>
+    <string name="no_perfumes_in_wishlist">Aún no tienes perfumes en tu lista de deseos</string>
+    <string name="no_tried_perfumes">Aún no tienes perfumes probados</string>
+
+    <!-- Explore -->
+    <string name="explore">Explorar</string>
+    <string name="filter">Filtrar</string>
+    <string name="clear_filters">Limpiar filtros</string>
+    <string name="apply_filters">Aplicar filtros</string>
+    <string name="no_results">No se encontraron resultados</string>
+
+    <!-- Settings -->
+    <string name="settings">Ajustes</string>
+    <string name="edit_profile">Editar Perfil</string>
+    <string name="cache_stats">Estadísticas de Caché</string>
+    <string name="clear_cache">Limpiar Caché</string>
+    <string name="delete_account">Eliminar Cuenta</string>
+    <string name="version">Versión</string>
+
+    <!-- General -->
+    <string name="loading">Cargando…</string>
+    <string name="error">Error</string>
+    <string name="retry">Reintentar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="confirm">Confirmar</string>
+    <string name="save">Guardar</string>
+    <string name="delete">Eliminar</string>
+    <string name="share">Compartir</string>
+    <string name="close">Cerrar</string>
+    <string name="next">Siguiente</string>
+    <string name="back">Atrás</string>
+    <string name="skip">Omitir</string>
+
+    <!-- Perfume Details -->
+    <string name="perfume_detail_title">Ficha</string>
+    <string name="description_section">DESCRIPCIÓN</string>
+    <string name="olfactory_pyramid_section">PIRÁMIDE OLFATIVA</string>
+    <string name="characteristics_section">CARACTERÍSTICAS</string>
+    <string name="information_section">INFORMACIÓN</string>
+    <string name="note_top">Salida</string>
+    <string name="note_heart">Corazón</string>
+    <string name="note_base">Fondo</string>
+    <string name="gender_label">Género</string>
+    <string name="presence_label">Presencia</string>
+    <string name="duration_label">Duración</string>
+    <string name="season_label">Estación</string>
+    <string name="occasion_label">Ocasión</string>
+    <string name="year_label">Año</string>
+    <string name="segment_label">Segmento</string>
+    <string name="origin_label">Origen</string>
+    <string name="price_range_label">Rango de precio</string>
+    <string name="gender_masculine">Masculino</string>
+    <string name="gender_feminine">Femenino</string>
+    <string name="gender_unisex">Unisex</string>
+    <string name="presence_intimate">Íntima</string>
+    <string name="presence_moderate">Moderada</string>
+    <string name="presence_notable">Notable</string>
+    <string name="presence_powerful">Potente</string>
+    <string name="duration_short">Corta</string>
+    <string name="duration_moderate">Moderada</string>
+    <string name="duration_long">Larga</string>
+    <string name="duration_very_long">Muy larga</string>
+    <string name="season_spring">Primavera</string>
+    <string name="season_summer">Verano</string>
+    <string name="season_autumn">Otoño</string>
+    <string name="season_winter">Invierno</string>
+    <string name="occasion_daily">Uso diario</string>
+    <string name="occasion_office">Oficina</string>
+    <string name="occasion_dates">Citas</string>
+    <string name="occasion_nights">Noches</string>
+    <string name="occasion_formal">Reuniones formales</string>
+    <string name="occasion_social">Eventos sociales</string>
+    <string name="occasion_nature">Paseos</string>
+    <string name="occasion_parties">Fiestas</string>
+    <string name="segment_mainstream">Comercial</string>
+    <string name="segment_designer">Designer</string>
+    <string name="segment_niche">Nicho</string>
+    <string name="segment_indie">Indie</string>
+    <string name="add_to_wishlist">Añadir a lista de deseos</string>
+    <string name="remove_from_wishlist">Quitar de lista de deseos</string>
+    <string name="mark_as_tried">Marcar como probado</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Bienvenido a Baura</string>
+    <string name="onboarding_welcome_subtitle">Descubre tu fragancia perfecta</string>
+    <string name="get_started">Comenzar</string>
+    <string name="create_my_profile">Crear mi Perfil</string>
+    <string name="onboarding_essence_title">La esencia que te define</string>
+    <string name="onboarding_essence_description">En el antiguo Egipto, el Ba era la esencia única de cada persona. Tu fragancia es tu aura moderna: la huella invisible que dejas en el tiempo y en la memoria de quienes te rodean.</string>
+    <string name="onboarding_pyramid_title">La Pirámide Olfativa</string>
+    <string name="onboarding_pyramid_description">Cada perfume cuenta una historia en tres actos. Las notas de salida te seducen, el corazón te enamora, y el fondo te acompaña todo el día.</string>
+    <string name="onboarding_families_title">Familias Olfativas</string>
+    <string name="onboarding_families_description">Cada familia cuenta una historia diferente.</string>
+    <string name="onboarding_discover_yours">Descubre cuál es la tuya</string>
+    <string name="top_notes">Notas de Salida</string>
+    <string name="top_notes_duration">Primeras notas · 15–30 min</string>
+    <string name="heart_notes">Notas de Corazón</string>
+    <string name="heart_notes_duration">Carácter principal · 2–4 horas</string>
+    <string name="base_notes">Notas de Fondo</string>
+    <string name="base_notes_duration">Base duradera · 6–24 horas</string>
+
+    <!-- Families -->
+    <string name="family_citrus">Cítricos</string>
+    <string name="family_floral">Florales</string>
+    <string name="family_fruity">Frutales</string>
+    <string name="family_woody">Amaderados</string>
+    <string name="family_oriental">Orientales</string>
+    <string name="family_spicy">Especiados</string>
+    <string name="family_aquatic">Acuáticos</string>
+    <string name="family_green">Verdes</string>
+    <string name="family_gourmand">Gourmand</string>
+</resources>
