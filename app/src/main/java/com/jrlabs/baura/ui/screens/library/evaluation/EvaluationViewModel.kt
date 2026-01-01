@@ -322,4 +322,47 @@ class EvaluationViewModel @Inject constructor(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+
+    // Custom notes management
+    fun addTopNote(note: String) {
+        _uiState.update { state ->
+            if (state.addedTopNotes.size < 3 && !state.addedTopNotes.contains(note)) {
+                state.copy(addedTopNotes = state.addedTopNotes + note)
+            } else state
+        }
+    }
+
+    fun removeTopNote(note: String) {
+        _uiState.update { state ->
+            state.copy(addedTopNotes = state.addedTopNotes - note)
+        }
+    }
+
+    fun addHeartNote(note: String) {
+        _uiState.update { state ->
+            if (state.addedHeartNotes.size < 3 && !state.addedHeartNotes.contains(note)) {
+                state.copy(addedHeartNotes = state.addedHeartNotes + note)
+            } else state
+        }
+    }
+
+    fun removeHeartNote(note: String) {
+        _uiState.update { state ->
+            state.copy(addedHeartNotes = state.addedHeartNotes - note)
+        }
+    }
+
+    fun addBaseNote(note: String) {
+        _uiState.update { state ->
+            if (state.addedBaseNotes.size < 3 && !state.addedBaseNotes.contains(note)) {
+                state.copy(addedBaseNotes = state.addedBaseNotes + note)
+            } else state
+        }
+    }
+
+    fun removeBaseNote(note: String) {
+        _uiState.update { state ->
+            state.copy(addedBaseNotes = state.addedBaseNotes - note)
+        }
+    }
 }
