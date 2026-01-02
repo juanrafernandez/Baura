@@ -166,4 +166,11 @@
     <string name="family_aquatic">Aquatic</string>
     <string name="family_green">Green</string>
     <string name="family_gourmand">Gourmand</string>
+
+    <!-- My Opinion Section -->
+    <string name="my_opinion_section">MY OPINION</string>
+    <string name="my_rating_label">My rating:</string>
+    <string name="my_duration_label">Duration</string>
+    <string name="my_impressions_label">My impressions</string>
+    <string name="edit_my_opinion">Edit my opinion</string>
 </resources>

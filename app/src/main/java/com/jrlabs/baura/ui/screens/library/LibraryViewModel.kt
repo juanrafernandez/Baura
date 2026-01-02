@@ -24,6 +24,7 @@ data class EnrichedTriedPerfume(
     val perfumeBrand: String,
     val perfumeImageURL: String?,
     val family: String?,
+    val perfumeGender: String?,
     val personalRating: Double,
     val globalRating: Double?
 )
@@ -97,6 +98,7 @@ class LibraryViewModel @Inject constructor(
                 perfumeBrand = perfume?.brandName?.ifEmpty { perfume.brand } ?: item.perfumeBrand ?: "",
                 perfumeImageURL = perfume?.imageURL ?: item.perfumeImageURL,
                 family = perfume?.family,
+                perfumeGender = perfume?.gender,
                 personalRating = item.rating,
                 globalRating = perfume?.popularity
             )

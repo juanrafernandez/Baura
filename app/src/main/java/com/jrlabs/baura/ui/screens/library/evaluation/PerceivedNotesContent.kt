@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,7 +31,10 @@ fun PerceivedNotesContent(
     selectedNotes: Set<String>,
     onToggleNote: (String) -> Unit,
     onNext: () -> Unit,
-    onAddCustomNotes: (() -> Unit)? = null
+    onAddCustomNotes: (() -> Unit)? = null,
+    addedTopNotes: List<String> = emptyList(),
+    addedHeartNotes: List<String> = emptyList(),
+    addedBaseNotes: List<String> = emptyList()
 ) {
     if (perfume == null) {
         Box(
@@ -48,12 +50,15 @@ fun PerceivedNotesContent(
         return
     }
 
-    // Group notes by category
+    // Group notes by category with added notes
     val noteCategories = listOf(
-        NoteCategory("NOTAS DE SALIDA", perfume.topNotes ?: emptyList()),
-        NoteCategory("NOTAS DE CORAZÓN", perfume.heartNotes ?: emptyList()),
-        NoteCategory("NOTAS DE FONDO", perfume.baseNotes ?: emptyList())
-    ).filter { it.notes.isNotEmpty() }
+        NoteCategoryWithAdded("NOTAS DE SALIDA", perfume.topNotes ?: emptyList(), addedTopNotes),
+        NoteCategoryWithAdded("NOTAS DE CORAZÓN", perfume.heartNotes ?: emptyList(), addedHeartNotes),
+        NoteCategoryWithAdded("NOTAS DE FONDO", perfume.baseNotes ?: emptyList(), addedBaseNotes)
+    ).filter { it.notes.isNotEmpty() || it.addedNotes.isNotEmpty() }
+
+    // Total added notes count
+    val totalAddedNotes = addedTopNotes.size + addedHeartNotes.size + addedBaseNotes.size
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -103,6 +108,7 @@ fun PerceivedNotesContent(
                     horizontalArrangement = Arrangement.spacedBy(AppSpacing.spacing8),
                     verticalArrangement = Arrangement.spacedBy(AppSpacing.spacing8)
                 ) {
+                    // Original perfume notes
                     category.notes.forEach { note ->
                         val isSelected = selectedNotes.contains(note)
                         NoteChip(
@@ -111,6 +117,10 @@ fun PerceivedNotesContent(
                             onClick = { onToggleNote(note) }
                         )
                     }
+                    // User added notes (with + indicator)
+                    category.addedNotes.forEach { note ->
+                        AddedNoteChip(note = note)
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(AppSpacing.spacing24))
@@ -118,7 +128,10 @@ fun PerceivedNotesContent(
 
             // "Add notes not in list" button
             if (onAddCustomNotes != null) {
-                AddCustomNotesButton(onClick = onAddCustomNotes)
+                AddCustomNotesButton(
+                    onClick = onAddCustomNotes,
+                    addedNotesCount = totalAddedNotes
+                )
                 Spacer(modifier = Modifier.height(AppSpacing.spacing24))
             }
 
@@ -156,9 +169,10 @@ fun PerceivedNotesContent(
     }
 }
 
-private data class NoteCategory(
+private data class NoteCategoryWithAdded(
     val title: String,
-    val notes: List<String>
+    val notes: List<String>,
+    val addedNotes: List<String> = emptyList()
 )
 
 @Composable
@@ -184,16 +198,47 @@ private fun NoteChip(
 }
 
 @Composable
+private fun AddedNoteChip(
+    note: String
+) {
+    Surface(
+        shape = RoundedCornerShape(AppCornerRadius.full),
+        color = AppColors.backgroundSecondary,
+        border = BorderStroke(1.dp, AppColors.borderPrimary)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = note.replaceFirstChar { it.uppercase() },
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = AppColors.textPrimary
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = AppColors.textSecondary
+            )
+        }
+    }
+}
+
+@Composable
 private fun AddCustomNotesButton(
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    addedNotesCount: Int = 0
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(AppCornerRadius.medium),
-        color = Color.Transparent,
-        border = BorderStroke(1.dp, AppColors.brandAccent.copy(alpha = 0.5f))
+        color = AppColors.brandAccent.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, AppColors.brandAccent.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
@@ -210,20 +255,22 @@ private fun AddCustomNotesButton(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            Text(
-                text = "He identificado notas que no están en la lista",
-                fontSize = 14.sp,
-                color = AppColors.brandAccent,
-                modifier = Modifier.weight(1f),
-                lineHeight = 20.sp
-            )
-
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = AppColors.brandAccent,
-                modifier = Modifier.size(24.dp)
-            )
+            Column {
+                Text(
+                    text = "He identificado notas que no están en la lista",
+                    fontSize = 14.sp,
+                    color = AppColors.brandAccent,
+                    lineHeight = 20.sp
+                )
+                if (addedNotesCount > 0) {
+                    val noteText = if (addedNotesCount == 1) "nota añadida" else "notas añadidas"
+                    Text(
+                        text = "$addedNotesCount $noteText",
+                        fontSize = 12.sp,
+                        color = AppColors.textSecondary
+                    )
+                }
+            }
         }
     }
 }

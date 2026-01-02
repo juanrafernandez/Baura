@@ -167,4 +167,11 @@
     <string name="family_aquatic">Acuáticos</string>
     <string name="family_green">Verdes</string>
     <string name="family_gourmand">Gourmand</string>
+
+    <!-- My Opinion Section -->
+    <string name="my_opinion_section">MI OPINIÓN</string>
+    <string name="my_rating_label">Mi puntuación:</string>
+    <string name="my_duration_label">Duración</string>
+    <string name="my_impressions_label">Mis impresiones</string>
+    <string name="edit_my_opinion">Editar mi opinión</string>
 </resources>

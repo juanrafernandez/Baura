@@ -136,41 +136,6 @@ fun EvaluationOnboardingScreen(
                     }
                 }
 
-                // Bottom button (for last step)
-                if (uiState.isLastStep && !uiState.isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(AppSpacing.screenHorizontal)
-                            .padding(bottom = AppSpacing.spacing16)
-                    ) {
-                        Button(
-                            onClick = { viewModel.saveTriedPerfume { /* handled by LaunchedEffect */ } },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp),
-                            enabled = !uiState.isSaving,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = AppColors.brandAccent
-                            ),
-                            shape = RoundedCornerShape(AppCornerRadius.medium)
-                        ) {
-                            if (uiState.isSaving) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    color = Color.White,
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                Text(
-                                    text = "Guardar",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                        }
-                    }
-                }
             }
         }
     }
@@ -290,7 +255,10 @@ private fun StepContent(
                 selectedNotes = uiState.perceivedNotes,
                 onToggleNote = { viewModel.togglePerceivedNote(it) },
                 onNext = { viewModel.goToNextStep() },
-                onAddCustomNotes = { showAddNotesSheet = true }
+                onAddCustomNotes = { showAddNotesSheet = true },
+                addedTopNotes = uiState.addedTopNotes,
+                addedHeartNotes = uiState.addedHeartNotes,
+                addedBaseNotes = uiState.addedBaseNotes
             )
 
             if (showAddNotesSheet) {
@@ -312,7 +280,8 @@ private fun StepContent(
                             NoteType.HEART -> viewModel.removeHeartNote(note)
                             NoteType.BASE -> viewModel.removeBaseNote(note)
                         }
-                    }
+                    },
+                    availableNotes = uiState.availableNotes
                 )
             }
         }
@@ -323,7 +292,10 @@ private fun StepContent(
                 impressions = uiState.impressions,
                 rating = uiState.rating,
                 onImpressionsChange = { viewModel.updateImpressions(it) },
-                onRatingChange = { viewModel.updateRating(it) }
+                onRatingChange = { viewModel.updateRating(it) },
+                onSave = { viewModel.saveTriedPerfume { } },
+                isSaving = uiState.isSaving,
+                isEditing = uiState.perfume != null
             )
         }
     }

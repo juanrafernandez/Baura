@@ -88,7 +88,8 @@ fun AddNotesBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 32.dp)
+                .navigationBarsPadding()
+                .padding(bottom = 16.dp)
         ) {
             // Header with title and done button
             Row(
@@ -181,14 +182,10 @@ fun AddNotesBottomSheet(
                     unfocusedContainerColor = AppColors.backgroundSecondary.copy(alpha = 0.5f),
                     focusedContainerColor = Color.White
                 ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
-                    onDone = {
-                        // Add custom note if it's not empty and under limit
-                        if (searchQuery.isNotBlank() && currentNotes.size < selectedTab.maxNotes) {
-                            onAddNote(selectedTab, searchQuery.trim())
-                            searchQuery = ""
-                        }
+                    onSearch = {
+                        // Just dismiss keyboard - user must select from filtered results
                         focusManager.clearFocus()
                     }
                 )
@@ -231,11 +228,10 @@ fun AddNotesBottomSheet(
                 EmptyNotesState(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 32.dp, vertical = 48.dp)
+                        .padding(horizontal = 32.dp)
+                        .padding(top = 32.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

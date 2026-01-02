@@ -11,6 +11,7 @@ import com.jrlabs.baura.data.model.Perfume
 import com.jrlabs.baura.data.model.Question
 import com.jrlabs.baura.data.model.QuestionOption
 import com.jrlabs.baura.data.model.TriedPerfume
+import com.jrlabs.baura.data.remote.NotesService
 import com.jrlabs.baura.data.remote.QuestionService
 import com.jrlabs.baura.data.remote.TriedPerfumeService
 import com.jrlabs.baura.data.repository.PerfumeRepository
@@ -51,7 +52,10 @@ data class EvaluationUiState(
 
     // Final step: impressions and rating
     val impressions: String = "",
-    val rating: Double = 0.0
+    val rating: Double = 0.0,
+
+    // Available notes from Firebase for search suggestions
+    val availableNotes: List<String> = emptyList()
 ) {
     val configuration: EvaluationConfiguration = EvaluationConfiguration(EvaluationContext.FULL_EVALUATION)
 
@@ -74,7 +78,8 @@ class EvaluationViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val perfumeRepository: PerfumeRepository,
     private val questionService: QuestionService,
-    private val triedPerfumeService: TriedPerfumeService
+    private val triedPerfumeService: TriedPerfumeService,
+    private val notesService: NotesService
 ) : ViewModel() {
 
     private val perfumeId: String = savedStateHandle.get<String>("perfumeId") ?: ""
@@ -109,12 +114,17 @@ class EvaluationViewModel @Inject constructor(
                 val questions = questionService.fetchEvaluationQuestions()
                 AppLogger.info("EvaluationVM", "Loaded ${questions.size} evaluation questions")
 
+                // Load available notes for search suggestions
+                val availableNotes = notesService.getNoteNames()
+                AppLogger.info("EvaluationVM", "Loaded ${availableNotes.size} available notes")
+
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         isQuestionsLoading = false,
                         perfume = perfume,
-                        questions = questions
+                        questions = questions,
+                        availableNotes = availableNotes
                     )
                 }
 
