@@ -178,11 +178,16 @@ fun LibraryScreen(
             Spacer(modifier = Modifier.height(AppSpacing.sectionSpacing))
         }
 
-        // Loading indicator
-        if (uiState.isLoading) {
+        // Show subtle loading indicator only in top corner, don't block content
+        if (uiState.isLoading && uiState.triedPerfumes.isEmpty() && uiState.wishlistItems.isEmpty()) {
+            // Only show loading if we have no data at all (first load)
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = AppColors.brandAccent
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 60.dp, end = 20.dp)
+                    .size(24.dp),
+                color = AppColors.brandAccent,
+                strokeWidth = 2.dp
             )
         }
     }
