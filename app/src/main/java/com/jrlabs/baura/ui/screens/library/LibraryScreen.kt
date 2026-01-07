@@ -101,7 +101,9 @@ fun LibraryScreen(
                                 rating = item.personalRating,
                                 showRating = true,
                                 ratingBadgeType = RatingBadgeType.HEART,
-                                onClick = { onNavigateToPerfumeDetail(item.perfumeId) }
+                                onClick = { onNavigateToPerfumeDetail(item.perfumeId) },
+                                modifier = Modifier.width(155.dp),
+                                imageHeight = 130
                             )
                         }
                     }
@@ -149,7 +151,9 @@ fun LibraryScreen(
                                 rating = item.globalRating,
                                 showRating = item.globalRating != null,
                                 ratingBadgeType = RatingBadgeType.STAR,
-                                onClick = { onNavigateToPerfumeDetail(item.perfumeId) }
+                                onClick = { onNavigateToPerfumeDetail(item.perfumeId) },
+                                modifier = Modifier.width(155.dp),
+                                imageHeight = 130
                             )
                         }
                     }
@@ -325,12 +329,13 @@ private fun LoadingSkeletonRow() {
 @Composable
 private fun LoadingSkeletonCard() {
     Column(
-        modifier = Modifier.width(140.dp)
+        modifier = Modifier.width(155.dp)
     ) {
         // Image skeleton
         Box(
             modifier = Modifier
-                .size(140.dp)
+                .fillMaxWidth()
+                .height(130.dp)
                 .background(
                     color = Color.Gray.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(12.dp)

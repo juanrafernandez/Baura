@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -27,8 +28,10 @@ import com.jrlabs.baura.ui.components.dialogs.EdgeToEdgeDialog
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -36,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jrlabs.baura.R
+import com.jrlabs.baura.data.model.Note
 import com.jrlabs.baura.data.model.UnifiedProfile
 import com.jrlabs.baura.ui.components.buttons.AppButton
 import com.jrlabs.baura.ui.components.buttons.AppButtonStyle
@@ -66,12 +70,17 @@ fun TestScreen(
                 onComplete = { viewModel.finishTest() }
             )
         }
-        uiState.showResults -> {
-            TestResultsScreen(
-                viewModel = viewModel,
-                onNavigateToPerfumeDetail = onNavigateToPerfumeDetail,
+        uiState.showResults && uiState.calculatedProfile != null -> {
+            ProfileResultsScreen(
+                profile = uiState.calculatedProfile!!,
+                onDismiss = { viewModel.resetTest() },
+                onPerfumeClick = onNavigateToPerfumeDetail,
+                isFromTest = true,
                 onSaveProfile = { viewModel.saveProfile() },
-                onStartNewTest = { viewModel.resetTest() }
+                onRetakeTest = {
+                    viewModel.resetTest()
+                    viewModel.startTest(uiState.currentTestType ?: TestType.PERSONAL)
+                }
             )
         }
         else -> {
@@ -106,14 +115,15 @@ private fun TestHomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White) // Solid base for edge-to-edge
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        AppColors.gradientBeigeWarm.copy(alpha = 0.3f),
-                        AppColors.gradientChampagne.copy(alpha = 0.2f),
-                        Color.Transparent
-                    )
+                        Color(0xFFE8D9C0),  // Warm golden/beige at top (same as Home)
+                        Color(0xFFF2E9DC),  // Lighter beige
+                        Color(0xFFFFFFFF)   // White
+                    ),
+                    startY = 0f,
+                    endY = 1200f
                 )
             )
     ) {
@@ -562,12 +572,15 @@ private fun ProfileCard(
                         }
                     }
 
-                    // Description - family name
+                    // Description - use descriptionProfile from Firestore, or fall back to summary
+                    val description = profile.descriptionProfile?.takeIf { it.isNotBlank() }
+                        ?: profile.summary
                     Text(
-                        text = getFamilyDescription(profile.primaryFamily),
+                        text = description,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Light,
                         color = AppColors.textSecondary,
+                        lineHeight = 16.sp,
                         maxLines = 2
                     )
                 }
@@ -681,6 +694,20 @@ private fun QuestionFlowScreen(
     val uiState by viewModel.uiState.collectAsState()
     val currentQuestion = uiState.currentQuestion
 
+    // Auto-advance for single-select questions
+    LaunchedEffect(uiState.shouldAutoAdvance) {
+        if (uiState.shouldAutoAdvance) {
+            // Small delay to show the selection before advancing
+            kotlinx.coroutines.delay(300)
+            viewModel.clearAutoAdvance()
+            if (uiState.isLastQuestion) {
+                onComplete()
+            } else {
+                viewModel.nextQuestion()
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -760,74 +787,144 @@ private fun QuestionFlowScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
-                    // Options with iOS-style left border accent
-                    currentQuestion.options.forEach { option ->
+                    // Show different UI based on question type
+                    if (uiState.isNotesQuestion) {
+                        // Notes autocomplete search
                         item {
-                            TestOptionCard(
-                                label = option.getLocalizedLabel(),
-                                description = option.getLocalizedDescription().takeIf { it.isNotEmpty() },
-                                isSelected = uiState.selectedAnswers.contains(option.id),
-                                showDescription = currentQuestion.uiConfig?.showDescriptions ?: true,
-                                onClick = { viewModel.selectAnswer(option.id) }
+                            NotesSearchField(
+                                query = uiState.noteSearchQuery,
+                                onQueryChange = { viewModel.updateNoteSearchQuery(it) },
+                                placeholder = currentQuestion.placeholder ?: "Oud, iris, ambroxan, iso e super..."
                             )
+                        }
+
+                        // Selection counter (iOS style)
+                        item {
+                            val maxSelections = currentQuestion.maxSelections ?: 10
+                            Row(
+                                modifier = Modifier.padding(top = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                if (uiState.selectedNotes.isNotEmpty()) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color(0xFF4CAF50),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Text(
+                                    text = "${uiState.selectedNotes.size}/$maxSelections notas seleccionadas",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.textSecondary
+                                )
+                            }
+                        }
+
+                        // Autocomplete suggestions
+                        if (uiState.filteredNotes.isNotEmpty()) {
+                            item {
+                                NotesSuggestionsList(
+                                    notes = uiState.filteredNotes,
+                                    onNoteSelected = { viewModel.selectNote(it) }
+                                )
+                            }
+                        }
+
+                        // Selected notes list (iOS style - vertical cards)
+                        if (uiState.selectedNotes.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Notas seleccionadas:",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = AppColors.textPrimary
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            items(uiState.selectedNotes) { note ->
+                                SelectedNoteCard(
+                                    note = note,
+                                    onRemove = { viewModel.removeNote(note) }
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                        }
+                    } else {
+                        // Standard options with iOS-style left border accent
+                        currentQuestion.options.forEach { option ->
+                            item {
+                                TestOptionCard(
+                                    label = option.getLocalizedLabel(),
+                                    description = option.getLocalizedDescription().takeIf { it.isNotEmpty() },
+                                    isSelected = uiState.selectedAnswers.contains(option.id),
+                                    showDescription = currentQuestion.uiConfig?.showDescriptions ?: true,
+                                    onClick = { viewModel.selectAnswer(option.id) }
+                                )
+                            }
                         }
                     }
 
                     item {
-                        Spacer(modifier = Modifier.height(80.dp)) // Space for bottom button
+                        Spacer(modifier = Modifier.height(120.dp)) // Space for bottom button
                     }
                 }
             }
         }
 
-        // Bottom navigation - Continuar button
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color.White.copy(alpha = 0.9f),
-                            Color.White
+        // Bottom navigation - Continuar button (for multi-select and notes questions)
+        if (uiState.isMultiSelect || uiState.isNotesQuestion) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.White.copy(alpha = 0.9f),
+                                Color.White
+                            )
                         )
                     )
-                )
-                .padding(horizontal = AppSpacing.screenHorizontal)
-                .padding(bottom = 24.dp, top = 16.dp)
-                .navigationBarsPadding()
-        ) {
-            // Continue/Finish button
-            val isEnabled = uiState.selectedAnswers.isNotEmpty()
-            Button(
-                onClick = {
-                    if (uiState.isLastQuestion) {
-                        onComplete()
-                    } else {
-                        viewModel.nextQuestion()
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                enabled = isEnabled,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isEnabled) AppColors.brandAccent else AppColors.borderSecondary,
-                    contentColor = if (isEnabled) AppColors.textOnAccent else AppColors.textDisabled,
-                    disabledContainerColor = AppColors.borderSecondary,
-                    disabledContentColor = AppColors.textDisabled
-                )
+                    .padding(horizontal = AppSpacing.screenHorizontal)
+                    .padding(bottom = 8.dp, top = 24.dp)
+                    .navigationBarsPadding()
             ) {
-                Text(
-                    text = if (uiState.isLastQuestion)
-                        stringResource(R.string.finish_test)
-                    else
-                        stringResource(R.string.continue_test),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                )
+                // Continue/Finish button
+                val isEnabled = uiState.selectedAnswers.isNotEmpty()
+                Button(
+                    onClick = {
+                        if (uiState.isLastQuestion) {
+                            onComplete()
+                        } else {
+                            viewModel.nextQuestion()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    enabled = isEnabled,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isEnabled) AppColors.brandAccent else AppColors.borderSecondary,
+                        contentColor = if (isEnabled) AppColors.textOnAccent else AppColors.textDisabled,
+                        disabledContainerColor = AppColors.borderSecondary,
+                        disabledContentColor = AppColors.textDisabled
+                    )
+                ) {
+                    Text(
+                        text = if (uiState.isLastQuestion)
+                            stringResource(R.string.finish_test)
+                        else
+                            stringResource(R.string.continue_test),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp
+                    )
+                }
             }
         }
     }
@@ -1166,6 +1263,160 @@ private fun TestResultsScreen(
 
         item {
             Spacer(modifier = Modifier.height(AppSpacing.spacing32))
+        }
+    }
+}
+
+/**
+ * Search field for notes autocomplete
+ */
+@Composable
+private fun NotesSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    placeholder: String
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .border(
+                width = 1.dp,
+                color = AppColors.borderSecondary,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                tint = AppColors.textTertiary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            BasicTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = TextStyle(
+                    fontSize = 16.sp,
+                    color = AppColors.textPrimary
+                ),
+                cursorBrush = SolidColor(AppColors.brandAccent),
+                singleLine = true,
+                decorationBox = { innerTextField ->
+                    if (query.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            fontSize = 16.sp,
+                            color = AppColors.textTertiary
+                        )
+                    }
+                    innerTextField()
+                }
+            )
+        }
+    }
+}
+
+/**
+ * List of autocomplete suggestions for notes
+ */
+@Composable
+private fun NotesSuggestionsList(
+    notes: List<Note>,
+    onNoteSelected: (Note) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .border(
+                width = 1.dp,
+                color = AppColors.borderSecondary,
+                shape = RoundedCornerShape(12.dp)
+            )
+    ) {
+        notes.forEachIndexed { index, note ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNoteSelected(note) }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = note.getLocalizedName("es"),
+                    fontSize = 15.sp,
+                    color = AppColors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+                note.family?.let { family ->
+                    Text(
+                        text = family.replaceFirstChar { it.uppercase() },
+                        fontSize = 12.sp,
+                        color = AppColors.textTertiary
+                    )
+                }
+            }
+            if (index < notes.lastIndex) {
+                HorizontalDivider(
+                    color = AppColors.borderSecondary.copy(alpha = 0.5f),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Card for a selected note (iOS style - rectangular card with X button)
+ */
+@Composable
+private fun SelectedNoteCard(
+    note: Note,
+    onRemove: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = AppColors.brandAccent.copy(alpha = 0.08f)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = note.getLocalizedName("es"),
+                fontSize = 15.sp,
+                color = AppColors.brandAccent,
+                fontWeight = FontWeight.Medium
+            )
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(AppColors.textTertiary.copy(alpha = 0.2f))
+                    .clickable(onClick = onRemove),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Eliminar",
+                    tint = AppColors.textSecondary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }

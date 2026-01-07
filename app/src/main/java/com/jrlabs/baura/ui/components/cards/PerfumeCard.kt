@@ -180,10 +180,12 @@ fun PerfumeCard(
 }
 
 /**
- * Compact perfume card for horizontal scrolling sections
+ * Compact perfume card for horizontal scrolling sections and grid displays
  * Equivalent to PerfumeCard.swift with style: .compact, size: .small
  * Matches iOS design with brand, name, family display and heart/star rating badges
  * Full card with shadow containing image and text info
+ *
+ * Use this component for all perfume card displays to maintain visual consistency.
  */
 @Composable
 fun PerfumeCompactCard(
@@ -195,9 +197,11 @@ fun PerfumeCompactCard(
     family: String? = null,
     rating: Double? = null,
     showRating: Boolean = true,
-    ratingBadgeType: RatingBadgeType = RatingBadgeType.HEART,
+    ratingBadgeType: RatingBadgeType = RatingBadgeType.STAR,
     // Legacy parameter for backwards compatibility
-    personalRating: Double? = null
+    personalRating: Double? = null,
+    // Image height - use null to auto-size based on aspect ratio
+    imageHeight: Int = 115
 ) {
     // Use rating if provided, otherwise fall back to personalRating for backwards compatibility
     val displayRating = rating ?: personalRating
@@ -210,7 +214,6 @@ fun PerfumeCompactCard(
     // Full card with shadow - iOS style
     Card(
         modifier = modifier
-            .width(150.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -227,7 +230,7 @@ fun PerfumeCompactCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(115.dp)
+                    .height(imageHeight.dp)
                     .background(Color.White)
             ) {
                 if (imageUrl != null) {
@@ -312,18 +315,18 @@ fun PerfumeCompactCard(
                 }
             }
 
-            // Text info section inside card
+            // Text info section inside card - compact spacing
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp)
-                    .padding(top = 4.dp, bottom = 10.dp),
+                    .padding(top = 2.dp, bottom = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Brand (centered, small)
                 Text(
                     text = brand.replace("_", " "),
-                    fontSize = 11.sp,
+                    fontSize = 10.sp,
                     color = AppColors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -331,27 +334,24 @@ fun PerfumeCompactCard(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(2.dp))
-
                 // Name (centered, bold)
                 Text(
                     text = name,
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = AppColors.textPrimary,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
-                    lineHeight = 16.sp,
+                    lineHeight = 14.sp,
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 // Family (centered, small, below name)
                 if (family != null) {
-                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = family,
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         color = AppColors.textTertiary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
