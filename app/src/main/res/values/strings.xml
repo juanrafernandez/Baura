@@ -66,6 +66,91 @@
     <string name="clear_filters">Limpiar filtros</string>
     <string name="apply_filters">Aplicar filtros</string>
     <string name="no_results">No se encontraron resultados</string>
+    <string name="explore_header_title">ENCUENTRA TU PERFUME</string>
+    <string name="sort">Ordenar</string>
+    <string name="search_placeholder">Escribe una nota, marca o familia olfativa…</string>
+    <string name="hide_filters">Ocultar Filtros</string>
+    <string name="show_filters">Mostrar Filtros</string>
+    <string name="explore_empty_title">Explora Nuestra Colección</string>
+    <string name="explore_empty_message">Usa la barra de búsqueda o aplica filtros para descubrir fragancias que se adapten a tus gustos.</string>
+    <string name="explore_no_results_title">No Encontramos Resultados</string>
+    <string name="explore_no_results_message">Intenta con otros términos de búsqueda o ajusta los filtros aplicados.</string>
+    <string name="perfumes_found">%1$d perfumes encontrados</string>
+    <!-- Sort options -->
+    <string name="sort_relevance">Relevancia</string>
+    <string name="sort_popularity_desc">Popularidad (Mayor a Menor)</string>
+    <string name="sort_popularity_asc">Popularidad (Menor a Mayor)</string>
+    <string name="sort_name_asc">Nombre (A - Z)</string>
+    <string name="sort_name_desc">Nombre (Z - A)</string>
+    <!-- Filter categories -->
+    <string name="filter_gender">Género</string>
+    <string name="filter_family">Familia Olfativa</string>
+    <string name="filter_season">Temporada Recomendada</string>
+    <string name="filter_projection">Proyección</string>
+    <string name="filter_duration">Duración</string>
+    <string name="filter_price">Precio</string>
+    <string name="filter_origin">Origen</string>
+    <string name="filter_segment">Segmento de Mercado</string>
+    <string name="filter_popularity">Popularidad</string>
+    <!-- Filter options - Gender -->
+    <string name="filter_male">Masculino</string>
+    <string name="filter_female">Femenino</string>
+    <string name="filter_unisex">Unisex</string>
+    <!-- Filter options - Family -->
+    <string name="filter_woody">Amaderado</string>
+    <string name="filter_oriental">Oriental</string>
+    <string name="filter_floral">Floral</string>
+    <string name="filter_fresh">Fresco</string>
+    <string name="filter_citrus">Cítrico</string>
+    <string name="filter_aromatic">Aromático</string>
+    <string name="filter_fougere">Fougère</string>
+    <string name="filter_chypre">Chipre</string>
+    <string name="filter_aquatic">Acuático</string>
+    <string name="filter_gourmand">Gourmand</string>
+    <!-- Filter options - Season -->
+    <string name="filter_spring">Primavera</string>
+    <string name="filter_summer">Verano</string>
+    <string name="filter_fall">Otoño</string>
+    <string name="filter_winter">Invierno</string>
+    <!-- Filter options - Projection -->
+    <string name="filter_intimate">Íntima</string>
+    <string name="filter_moderate">Moderada</string>
+    <string name="filter_notable">Notable</string>
+    <string name="filter_powerful">Potente</string>
+    <string name="filter_enormous">Enorme</string>
+    <!-- Filter options - Duration -->
+    <string name="filter_very_short">Muy corta</string>
+    <string name="filter_short">Corta</string>
+    <string name="filter_duration_moderate">Moderada</string>
+    <string name="filter_long_lasting">Duradera</string>
+    <string name="filter_eternal">Eterna</string>
+    <!-- Filter options - Price -->
+    <string name="filter_cheap">Económico</string>
+    <string name="filter_affordable">Accesible</string>
+    <string name="filter_mid_range">Gama Media</string>
+    <string name="filter_premium">Premium</string>
+    <string name="filter_luxury">Lujo</string>
+    <!-- Filter options - Origin -->
+    <string name="filter_france">Francia</string>
+    <string name="filter_italy">Italia</string>
+    <string name="filter_usa">Estados Unidos</string>
+    <string name="filter_spain">España</string>
+    <string name="filter_uk">Reino Unido</string>
+    <string name="filter_germany">Alemania</string>
+    <string name="filter_middle_east">Medio Oriente</string>
+    <string name="filter_other">Otro</string>
+    <!-- Filter options - Segment -->
+    <string name="filter_designer">Diseñador</string>
+    <string name="filter_niche">Nicho</string>
+    <string name="filter_indie">Indie</string>
+    <string name="filter_celebrity">Celebridad</string>
+    <string name="filter_classic">Clásico</string>
+    <!-- Filter options - Popularity -->
+    <string name="filter_very_popular">Muy popular</string>
+    <string name="filter_popular">Popular</string>
+    <string name="filter_pop_moderate">Moderada</string>
+    <string name="filter_pop_niche">De nicho</string>
+    <string name="filter_rare">Rara</string>
 
     <!-- Settings -->
     <string name="settings">Ajustes</string>
@@ -91,6 +176,14 @@
 
     <!-- Perfume Details -->
     <string name="perfume_detail_title">Ficha</string>
+    <string name="family">Familia</string>
+    <string name="brand">Marca</string>
+    <string name="duration">Duración</string>
+    <string name="presence">Presencia</string>
+    <string name="season">Temporada</string>
+    <string name="occasion">Ocasión</string>
+    <string name="personality">Personalidad</string>
+    <string name="price">Precio</string>
     <string name="description_section">DESCRIPCIÓN</string>
     <string name="olfactory_pyramid_section">PIRÁMIDE OLFATIVA</string>
     <string name="characteristics_section">CARACTERÍSTICAS</string>
