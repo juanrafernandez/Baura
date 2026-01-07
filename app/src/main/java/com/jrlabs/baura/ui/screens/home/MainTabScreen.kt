@@ -95,6 +95,7 @@ fun MainTabScreen(
     onNavigateToEvaluation: (String, Boolean) -> Unit = { _, _ -> },
     onNavigateToTriedList: () -> Unit = {},
     onNavigateToWishlist: () -> Unit = {},
+    onNavigateToAddTriedPerfume: () -> Unit = {},
     onLogout: () -> Unit,
     onShowOnboarding: () -> Unit = {},
     navController: NavHostController = rememberNavController()
@@ -128,7 +129,8 @@ fun MainTabScreen(
                     onNavigateToPerfumeDetail = onNavigateToPerfumeDetail,
                     onNavigateToEvaluation = onNavigateToEvaluation,
                     onNavigateToTriedList = onNavigateToTriedList,
-                    onNavigateToWishlist = onNavigateToWishlist
+                    onNavigateToWishlist = onNavigateToWishlist,
+                    onNavigateToAddTriedPerfume = onNavigateToAddTriedPerfume
                 )
             }
             composable(MainTab.Explore.route) {

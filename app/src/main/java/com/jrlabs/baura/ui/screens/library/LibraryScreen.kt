@@ -22,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jrlabs.baura.ui.components.dialogs.EdgeToEdgeDialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jrlabs.baura.ui.components.cards.PerfumeCompactCard
 import com.jrlabs.baura.ui.components.cards.RatingBadgeType
@@ -45,31 +44,11 @@ fun LibraryScreen(
     onNavigateToEvaluation: (String, Boolean) -> Unit = { _, _ -> },
     onNavigateToTriedList: () -> Unit = {},
     onNavigateToWishlist: () -> Unit = {},
+    onNavigateToAddTriedPerfume: () -> Unit = {},
     viewModel: LibraryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
-
-    // State for showing AddTriedPerfume modal
-    var showAddTriedPerfume by remember { mutableStateOf(false) }
-
-    // Full screen modal for adding tried perfume (edge-to-edge)
-    if (showAddTriedPerfume) {
-        EdgeToEdgeDialog(
-            onDismissRequest = { showAddTriedPerfume = false },
-            dismissOnBackPress = true,
-            dismissOnClickOutside = false
-        ) {
-            AddTriedPerfumeScreen(
-                onDismiss = { showAddTriedPerfume = false },
-                onPerfumeSelected = { perfumeId ->
-                    showAddTriedPerfume = false
-                    // Navigate to evaluation flow (isEditing = false for new perfume)
-                    onNavigateToEvaluation(perfumeId, false)
-                }
-            )
-        }
-    }
 
     Box(
         modifier = Modifier
@@ -101,7 +80,8 @@ fun LibraryScreen(
             HorizontalPerfumeSection(
                 title = "TUS PERFUMES PROBADOS",
                 count = uiState.triedPerfumes.size,
-                isEmpty = uiState.triedPerfumes.isEmpty(),
+                isLoading = uiState.isLoadingTriedPerfumes,
+                hasLoaded = uiState.hasLoadedTriedPerfumes,
                 emptyMessage = "Aún no has probado ningún perfume.\n¡Añade tu primer perfume probado!",
                 onViewAll = onNavigateToTriedList,
                 content = {
@@ -131,7 +111,7 @@ fun LibraryScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Add Tried Perfume Button
-            AddPerfumeButton(onClick = { showAddTriedPerfume = true })
+            AddPerfumeButton(onClick = onNavigateToAddTriedPerfume)
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -148,7 +128,8 @@ fun LibraryScreen(
             HorizontalPerfumeSection(
                 title = "TU LISTA DE DESEOS",
                 count = uiState.wishlistItems.size,
-                isEmpty = uiState.wishlistItems.isEmpty(),
+                isLoading = uiState.isLoadingWishlist,
+                hasLoaded = uiState.hasLoadedWishlist,
                 emptyMessage = "Tu lista de deseos está vacía.\nBusca un perfume y pulsa el botón de carrito para añadirlo.",
                 onViewAll = onNavigateToWishlist,
                 content = {
@@ -178,9 +159,10 @@ fun LibraryScreen(
             Spacer(modifier = Modifier.height(AppSpacing.sectionSpacing))
         }
 
-        // Show subtle loading indicator only in top corner, don't block content
-        if (uiState.isLoading && uiState.triedPerfumes.isEmpty() && uiState.wishlistItems.isEmpty()) {
-            // Only show loading if we have no data at all (first load)
+        // Show subtle loading indicator only when both sections are still loading
+        val isStillLoading = (uiState.isLoadingTriedPerfumes && !uiState.hasLoadedTriedPerfumes) ||
+                             (uiState.isLoadingWishlist && !uiState.hasLoadedWishlist)
+        if (isStillLoading && uiState.triedPerfumes.isEmpty() && uiState.wishlistItems.isEmpty()) {
             CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -218,11 +200,15 @@ private fun LibraryHeader() {
 private fun HorizontalPerfumeSection(
     title: String,
     count: Int,
-    isEmpty: Boolean,
+    isLoading: Boolean,
+    hasLoaded: Boolean,
     emptyMessage: String,
     onViewAll: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    // Determine if truly empty (only after loading finished)
+    val isTrulyEmpty = hasLoaded && count == 0
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -256,7 +242,7 @@ private fun HorizontalPerfumeSection(
                 }
             }
 
-            if (!isEmpty) {
+            if (!isTrulyEmpty && hasLoaded) {
                 TextButton(
                     onClick = onViewAll,
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
@@ -279,11 +265,20 @@ private fun HorizontalPerfumeSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Content or empty state
-        if (isEmpty) {
-            EmptyStateBox(message = emptyMessage)
-        } else {
-            content()
+        // Content, loading skeleton, or empty state
+        when {
+            // Show skeleton while loading
+            isLoading && !hasLoaded -> {
+                LoadingSkeletonRow()
+            }
+            // Show empty state only after loading finished AND list is empty
+            isTrulyEmpty -> {
+                EmptyStateBox(message = emptyMessage)
+            }
+            // Show content when we have data
+            else -> {
+                content()
+            }
         }
     }
 }
@@ -308,6 +303,60 @@ private fun EmptyStateBox(message: String) {
             ),
             color = AppColors.textSecondary,
             textAlign = TextAlign.Center
+        )
+    }
+}
+
+/**
+ * Loading skeleton for horizontal perfume list - matches PerfumeCompactCard dimensions
+ */
+@Composable
+private fun LoadingSkeletonRow() {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        repeat(3) {
+            LoadingSkeletonCard()
+        }
+    }
+}
+
+@Composable
+private fun LoadingSkeletonCard() {
+    Column(
+        modifier = Modifier.width(140.dp)
+    ) {
+        // Image skeleton
+        Box(
+            modifier = Modifier
+                .size(140.dp)
+                .background(
+                    color = Color.Gray.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        // Name skeleton
+        Box(
+            modifier = Modifier
+                .width(100.dp)
+                .height(14.dp)
+                .background(
+                    color = Color.Gray.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(4.dp)
+                )
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        // Brand skeleton
+        Box(
+            modifier = Modifier
+                .width(70.dp)
+                .height(12.dp)
+                .background(
+                    color = Color.Gray.copy(alpha = 0.10f),
+                    shape = RoundedCornerShape(4.dp)
+                )
         )
     }
 }

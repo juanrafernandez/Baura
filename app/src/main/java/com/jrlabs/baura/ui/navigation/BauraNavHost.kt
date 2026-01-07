@@ -22,6 +22,7 @@ import com.jrlabs.baura.ui.screens.auth.ForgotPasswordScreen
 import com.jrlabs.baura.ui.screens.auth.LoginScreen
 import com.jrlabs.baura.ui.screens.auth.RegisterScreen
 import com.jrlabs.baura.ui.screens.home.MainTabScreen
+import com.jrlabs.baura.ui.screens.library.AddTriedPerfumeScreen
 import com.jrlabs.baura.ui.screens.library.AllTriedPerfumesScreen
 import com.jrlabs.baura.ui.screens.library.AllWishlistScreen
 import com.jrlabs.baura.ui.screens.library.evaluation.EvaluationOnboardingScreen
@@ -36,6 +37,7 @@ import com.jrlabs.baura.ui.screens.settings.EditProfileScreen
 import com.jrlabs.baura.ui.screens.splash.AnimatedSplashScreen
 import com.jrlabs.baura.data.local.MetadataIndexManager
 import com.jrlabs.baura.ui.theme.AppColors
+import com.jrlabs.baura.utils.AppLogger
 import kotlinx.coroutines.launch
 
 /**
@@ -62,6 +64,7 @@ sealed class Screen(val route: String) {
     }
     data object AllTriedPerfumes : Screen("all_tried_perfumes")
     data object AllWishlist : Screen("all_wishlist")
+    data object AddTriedPerfume : Screen("add_tried_perfume")
 }
 
 /**
@@ -74,32 +77,36 @@ fun BauraNavHost(
     navController: NavHostController = rememberNavController(),
     authViewModel: AuthViewModel = hiltViewModel(),
     launchCoordinator: AppLaunchCoordinator,
-    metadataIndexManager: MetadataIndexManager
+    metadataIndexManager: MetadataIndexManager,
+    pendingDeepLink: DeepLinkHandler.DeepLinkDestination? = null,
+    onDeepLinkHandled: () -> Unit = {}
 ) {
     val authState by authViewModel.authState.collectAsState()
     val currentPhase by launchCoordinator.currentPhase.collectAsState()
     val isDataLoaded by launchCoordinator.isDataLoaded.collectAsState()
     val scope = rememberCoroutineScope()
 
-    // Initialize launch coordinator
+    // Initialize launch coordinator and pre-load essential data during splash
     LaunchedEffect(Unit) {
+        AppLogger.debug("BauraNavHost", ">>> LaunchedEffect START at ${System.currentTimeMillis()}")
         launchCoordinator.initialize()
-    }
 
-    // Pre-load metadata cache during splash screen for fast Home screen loading
-    LaunchedEffect(Unit) {
+        // PRE-LOAD MetadataIndex during splash (like iOS)
+        // This ensures HomeViewModel has instant access to perfume metadata
+        val startTime = System.currentTimeMillis()
         try {
-            // Pre-load the metadata cache - this is the key optimization
-            // The cache will be ready when HomeScreen's ViewModel is created
-            android.util.Log.d("BauraNavHost", "Pre-loading metadata cache during splash...")
-            val startTime = System.currentTimeMillis()
-            metadataIndexManager.getAllMetadata()
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                metadataIndexManager.getAllMetadata()
+            }
             val elapsed = System.currentTimeMillis() - startTime
-            android.util.Log.d("BauraNavHost", "Metadata cache pre-loaded in ${elapsed}ms")
+            AppLogger.debug("BauraNavHost", ">>> MetadataIndex PRE-LOADED in ${elapsed}ms")
         } catch (e: Exception) {
-            android.util.Log.e("BauraNavHost", "Error pre-loading metadata", e)
+            AppLogger.error("BauraNavHost", ">>> MetadataIndex pre-load failed", e)
         }
+
+        // Mark data as loaded AFTER metadata is in memory
         launchCoordinator.dataLoadDidComplete()
+        AppLogger.debug("BauraNavHost", ">>> LaunchedEffect DONE")
     }
 
     // Show content based on launch phase
@@ -149,7 +156,9 @@ fun BauraNavHost(
                     navController = navController,
                     authViewModel = authViewModel,
                     authState = authState,
-                    launchCoordinator = launchCoordinator
+                    launchCoordinator = launchCoordinator,
+                    pendingDeepLink = pendingDeepLink,
+                    onDeepLinkHandled = onDeepLinkHandled
                 )
             }
         }
@@ -164,8 +173,30 @@ private fun MainAppNavigation(
     navController: NavHostController,
     authViewModel: AuthViewModel,
     authState: com.jrlabs.baura.ui.screens.auth.AuthState,
-    launchCoordinator: AppLaunchCoordinator
+    launchCoordinator: AppLaunchCoordinator,
+    pendingDeepLink: DeepLinkHandler.DeepLinkDestination? = null,
+    onDeepLinkHandled: () -> Unit = {}
 ) {
+    // Handle pending deep link after authentication
+    LaunchedEffect(pendingDeepLink, authState.isAuthenticated) {
+        if (pendingDeepLink != null && authState.isAuthenticated && !authState.isLoading) {
+            when (pendingDeepLink) {
+                is DeepLinkHandler.DeepLinkDestination.PerfumeDetail -> {
+                    navController.navigate(Screen.PerfumeDetail.createRoute(pendingDeepLink.perfumeId))
+                }
+                is DeepLinkHandler.DeepLinkDestination.Wishlist -> {
+                    navController.navigate(Screen.AllWishlist.route)
+                }
+                is DeepLinkHandler.DeepLinkDestination.TriedPerfumes -> {
+                    navController.navigate(Screen.AllTriedPerfumes.route)
+                }
+                else -> {
+                    // Tab-based deep links are handled by MainTabScreen
+                }
+            }
+            onDeepLinkHandled()
+        }
+    }
     // Show loading while checking auth state
     if (authState.isLoading) {
         Box(
@@ -255,6 +286,9 @@ private fun MainAppNavigation(
                 },
                 onNavigateToWishlist = {
                     navController.navigate(Screen.AllWishlist.route)
+                },
+                onNavigateToAddTriedPerfume = {
+                    navController.navigate(Screen.AddTriedPerfume.route)
                 },
                 onLogout = {
                     authViewModel.signOut()
@@ -395,6 +429,19 @@ private fun MainAppNavigation(
                 onDismiss = { navController.popBackStack() },
                 onNavigateToPerfumeDetail = { perfumeId ->
                     navController.navigate(Screen.PerfumeDetail.createRoute(perfumeId))
+                }
+            )
+        }
+
+        // Add Tried Perfume
+        composable(Screen.AddTriedPerfume.route) {
+            AddTriedPerfumeScreen(
+                onDismiss = { navController.popBackStack() },
+                onPerfumeSelected = { perfumeId ->
+                    // Navigate to evaluation, replacing this screen
+                    navController.navigate(Screen.PerfumeEvaluation.createRoute(perfumeId, false)) {
+                        popUpTo(Screen.AddTriedPerfume.route) { inclusive = true }
+                    }
                 }
             )
         }
